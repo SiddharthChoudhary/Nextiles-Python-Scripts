@@ -80,11 +80,11 @@ def store_response_directory(response,request_object):
         if not os.path.exists(_path_dir):
             os.makedirs(_path_dir)
         for _time in response[_date]:
-            _path_time = os.path.join(_path_dir,_time)
+            _path_time = os.path.join(_path_dir,_time.replace(":","-"))
             if not os.path.exists(_path_time):
                 os.makedirs(_path_time)
             for file_name in response[_date][_time]:
-                _file_name_path = os.path.join(_path_time,file_name)
+                _file_name_path = os.path.join(_path_time,file_name.replace(":","-"))
                 with open(f'{_file_name_path}.csv','w') as f:
                     f.write(str(response[_date][_time][file_name]))
     print(f"Downloaded!, check /{DIRECTORY} directory")
