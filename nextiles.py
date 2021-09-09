@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 from typing import List
 
 
-URL = 'https://68a9g89ek2.execute-api.us-east-1.amazonaws.com/alpha/trainingdata/?'
-LS_URL = 'https://68a9g89ek2.execute-api.us-east-1.amazonaws.com/alpha/trainingdata/?listfiles=True&'
+URL = 'https://qqslklsk7i.execute-api.us-east-1.amazonaws.com/beta/raw-data?'
+LS_URL = 'https://qqslklsk7i.execute-api.us-east-1.amazonaws.com/beta/raw-data?listfiles=True&'
 DIRECTORY = 'data'
 
 class RequestModel:
