@@ -9,6 +9,7 @@ from typing import List
 
 
 URL = 'https://qqslklsk7i.execute-api.us-east-1.amazonaws.com/beta/raw-data?'
+ANALYTICS_URL = 'https://umea4nco19.execute-api.us-east-1.amazonaws.com/beta/metrics?'
 LS_URL = 'https://qqslklsk7i.execute-api.us-east-1.amazonaws.com/beta/raw-data?listfiles=True&'
 DIRECTORY = 'data'
 
@@ -20,6 +21,16 @@ class RequestModel:
         self.start_time = start_time
         self.end_time = end_time
 
+class AnalyticsRequestModel:
+    def __init__(self,username,organization,token,start_time,end_time,metric_type,request_date,data_format):
+        self.username = username
+        self.organization = organization
+        self.token = token
+        self.start_time = start_time
+        self.end_time = end_time
+        self.data_format = data_format
+        self.metric_type = metric_type
+        self.request_date = request_date
 
 def return_url(request_obj:RequestModel,url:str)->str:
     
@@ -47,6 +58,7 @@ def get_data(request_object,url):
             response = f.read().decode('utf-8')
         response=json.loads(response)
     except urllib.error.HTTPError as e:
+        print(e)
         if (e.status==502):
             print("ERROR: Too much data, pass me a shorter timeperiod")
         else:
@@ -100,20 +112,34 @@ def main(argv):
        sys.exit(2)
    store_response_directory(response,request_object=request_object)
    
-   
+def getAnalytics(request:AnalyticsRequestModel):
+    _url = f"{ANALYTICS_URL}username={request.username}&userRole=Developer&organization={request.organization}&metric_type={request.metric_type}&data_format={request.data_format}&request_date={request.request_date}"
+    response =  get_data(request_object=request,url=_url)
+    if response is None:
+       print("Nothing received")
+       sys.exit(2)
+    else:
+        print(response)
 
 def parse_arguments(argv:List[str]) -> RequestModel:
     username = None
     organization = None
     token = None
+    metric_type = None
+    data_format = None
+    request_date = None
     start_time = None
     end_time = None
+    _analytics = False
     _list = False
     try:
-      opts, args = getopt.getopt(argv,"hu:o:t:s:e:",["username=","organization=","token=","start_timestamp=","end_timestamp="])
+      opts, args = getopt.getopt(argv,"hu:o:t:s:e:m:f:r:",["username=","organization=","token=","start_timestamp=","end_timestamp=","metric_type=","data_format=","request_date="])
     #   print(opts, args)
       if "list" in args:
           _list = True
+      if "analytics" in args:
+          _analytics=True
+
     except getopt.GetoptError:
         print('ERROR: Execute the script as: \n python nextiles.py -u <username> -o <organization> -t <token> -s <start_timestamp> -e <end_timestamp>')
         print('\nExample:\n\t python3 nextiles.py -u Siddharth -o Nextiles -t your-token -s 2021-06-16 -e 2021-06-22')
@@ -127,6 +153,12 @@ def parse_arguments(argv:List[str]) -> RequestModel:
             username = arg
         elif opt in ("-o", "--organization"):
             organization = arg
+        elif opt in ("-m", "--metric_type"):
+            metric_type = arg
+        elif opt in ("-f", "--data_format"):
+            data_format = arg
+        elif opt in ("-r", "--request_date"):
+            request_date = arg
         elif opt in ("-t","--token"):
             token = arg
             if len(token)>60:
@@ -148,7 +180,10 @@ def parse_arguments(argv:List[str]) -> RequestModel:
             except Exception as e:
                 print("ERROR: end_time should be YYYY-mm-dd format, for ex: 2021-08-11'")
                 sys.exit(2)
-    
+
+    if _analytics:
+        getAnalytics(AnalyticsRequestModel(username=username,organization=organization,metric_type=metric_type,token=token,start_time=start_time,end_time=end_time,data_format=data_format,request_date=request_date))
+        
     # checks if all the required parameters are passed
     if None in [organization,username,token,start_time] and _list!=True:
         print('Error: username, organization, token, and start_time; All of these are required')
